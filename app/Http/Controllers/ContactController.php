@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Contact;
+use App\Http\Requests\StoreContactRequest;
 use Illuminate\Http\Request;
 
 class ContactController extends Controller
@@ -35,16 +36,9 @@ class ContactController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(StoreContactRequest $request)
     {
-        $data = $request->validate([
-            'name' => 'required',
-            'email' => 'required|email',
-            'phone_number' => 'required|digits:9',
-            'age' => 'required|numeric|min:1|max:255',
-        ]);
-
-        auth()->user()->contacts()->create($data);
+        auth()->user()->contacts()->create($request->validated());
 
         return redirect()->route('home');
     }
@@ -80,16 +74,10 @@ class ContactController extends Controller
      * @param  \App\Models\Contact  $contact
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Contact $contact)
+    public function update(StoreContactRequest $request, Contact $contact)
     {
-        $data = $request->validate([
-            'name' => 'required',
-            'email' => 'required|email',
-            'phone_number' => 'required|digits:9',
-            'age' => 'required|numeric|min:1|max:255',
-        ]);
-
-        $contact->update($data);
+        $this->authorize('update', $contact);
+        $contact->update($request->validated());
 
         return redirect()->route('home');
     }
