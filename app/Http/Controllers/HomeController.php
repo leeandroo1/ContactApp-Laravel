@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Contact;
+use Illuminate\Http\Request;
 
 class HomeController extends Controller
 {
@@ -24,7 +24,6 @@ class HomeController extends Controller
      */
     public function index()
     {
-        
-        return view('home', ['contacts' => Contact::all()]);
+        return view('home', ['contacts' => auth()->user()->contacts]);
     }
 }

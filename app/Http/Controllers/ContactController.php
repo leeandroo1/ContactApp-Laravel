@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Contact;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Response;
 
 class ContactController extends Controller
 {
@@ -15,7 +14,9 @@ class ContactController extends Controller
      */
     public function index()
     {
-        return view('contacts.index', ['contacts' => Contact::all()]);
+        $contacts = auth()->user()->contacts;
+
+        return view('contacts.index', compact('contacts'));
     }
 
     /**
@@ -36,21 +37,16 @@ class ContactController extends Controller
      */
     public function store(Request $request)
     {
-        /* Validación para campo name vacio, si esta vacio retorna atras con error enunciado bajo el input 
-            if (is_null($request->get('name'))) {
-                return back()->withErrors([
-                    'name' => 'This field is required',
-                ]); 
-            }   
-        */
         $data = $request->validate([
-            'name' => 'required|string|max:512',
+            'name' => 'required',
             'email' => 'required|email',
             'phone_number' => 'required|digits:9',
             'age' => 'required|numeric|min:1|max:255',
         ]);
-        Contact::create($data);
-        return redirect()->route("home");
+
+        auth()->user()->contacts()->create($data);
+
+        return redirect()->route('home');
     }
 
     /**
@@ -61,7 +57,8 @@ class ContactController extends Controller
      */
     public function show(Contact $contact)
     {
-        return view('contacts.show ', compact('contact')); 
+        $this->authorize('view', $contact);
+        return view('contacts.show', compact('contact'));
     }
 
     /**
@@ -72,6 +69,7 @@ class ContactController extends Controller
      */
     public function edit(Contact $contact)
     {
+        $this->authorize('update', $contact);
         return view('contacts.edit', compact('contact'));
     }
 
@@ -85,13 +83,15 @@ class ContactController extends Controller
     public function update(Request $request, Contact $contact)
     {
         $data = $request->validate([
-            'name' => 'required|string|max:512',
+            'name' => 'required',
             'email' => 'required|email',
             'phone_number' => 'required|digits:9',
             'age' => 'required|numeric|min:1|max:255',
         ]);
+
         $contact->update($data);
-        return redirect()->route('home'); 
+
+        return redirect()->route('home');
     }
 
     /**
@@ -102,7 +102,9 @@ class ContactController extends Controller
      */
     public function destroy(Contact $contact)
     {
+        $this->authorize('delete', $contact);
         $contact->delete();
-        return redirect()->route('home'); 
+
+        return redirect()->route('home');
     }
 }
